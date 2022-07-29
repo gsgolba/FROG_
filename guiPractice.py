@@ -8,11 +8,13 @@ class Window(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Hello Tkinter")
-        self.geometry('960x600')
+        self.geometry('600x300')
 
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
         self.widget_creation()
+        msgbox.showinfo('testing')
+        print('bruh')
         '''
         self.name_text = tk.StringVar()
 
@@ -40,10 +42,13 @@ class Window(tk.Tk):
         motor_name_entry.grid(column=2, row=0, **padding)
         serial_button = tk.Button(self, text='Try connecting', command=self.connect_motor)
         serial_button.grid(column=3, row=0, **padding)
+        kill_button = tk.Button(self, text='Kill program', command=self.kill_it)
+        kill_button.grid(column=1, row=1, **padding)
 
     def connect_motor(self):
         try:
-            stepperMotor.Controller(self.serial_var, self.motor_var)
+            stepperMotor.Controller(self.serial_var.get(), self.motor_var.get())
+            #stepperMotor.Controller('26001568', 'KST101')
         except:
             msgbox.showerror('uh oh', 'Could not connect')
     def say_hello(self):
@@ -57,7 +62,8 @@ class Window(tk.Tk):
             self.after(2000, self.destroy)
         else:
             msgbox.showinfo("Not Closing", "Great! This window will stay open.")
-
+    def kill_it(self):
+        self.destroy()
 
 if __name__ == "__main__":
     window = Window()
