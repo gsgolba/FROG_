@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
-import stepperMotor
+#import stepperMotor
 
 
 #class Controller_Connect()
@@ -8,13 +8,11 @@ class Window(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Hello Tkinter")
-        self.geometry('600x300')
+        self.geometry('900x600')
 
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
         self.widget_creation()
-        msgbox.showinfo('testing')
-        print('bruh')
         '''
         self.name_text = tk.StringVar()
 
@@ -47,10 +45,12 @@ class Window(tk.Tk):
 
     def connect_motor(self):
         try:
-            stepperMotor.Controller(self.serial_var.get(), self.motor_var.get())
+            msgbox.showinfo('umm', 'normally I would connect to the motor here')
+            #stepperMotor.Controller(self.serial_var.get(), self.motor_var.get())
             #stepperMotor.Controller('26001568', 'KST101')
         except:
             msgbox.showerror('uh oh', 'Could not connect')
+    '''
     def say_hello(self):
         message = "Hello there " + self.name_entry.get()
         msgbox.showinfo("Hello", message)
@@ -62,6 +62,7 @@ class Window(tk.Tk):
             self.after(2000, self.destroy)
         else:
             msgbox.showinfo("Not Closing", "Great! This window will stay open.")
+    '''
     def kill_it(self):
         self.destroy()
 
