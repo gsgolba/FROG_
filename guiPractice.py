@@ -1,10 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
+import stepperMotor
 
-from pandas_datareader import test
-
-def connect():
-    print('nice')
 
 #class Controller_Connect()
 class Window(tk.Tk):
@@ -45,7 +42,10 @@ class Window(tk.Tk):
         serial_button.grid(column=3, row=0, **padding)
 
     def connect_motor(self):
-        msgbox.showinfo('No motor connected yet')
+        try:
+            stepperMotor.Controller(self.serial_var, self.motor_var)
+        except:
+            msgbox.showerror('uh oh', 'Could not connect')
     def say_hello(self):
         message = "Hello there " + self.name_entry.get()
         msgbox.showinfo("Hello", message)
