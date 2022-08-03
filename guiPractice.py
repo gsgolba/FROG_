@@ -25,7 +25,7 @@ class Window(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("FROG")
-        self.geometry('1400x800')
+        self.geometry('1400x600')
         #self.rowconfigure(6)
         #self.columnconfigure(6)
 
