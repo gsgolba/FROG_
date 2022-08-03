@@ -54,11 +54,11 @@ class Window(tk.Tk):
         self.max_wave_var = tk.StringVar()
 
         self.step_size_var = tk.StringVar()
-        self.step_size_var.set('5')
+        self.step_size_var.set('50')
         self.step_size_in_space = 0
 
         self.scan_width_var = tk.StringVar()
-        self.scan_width_var.set('50')
+        self.scan_width_var.set('500')
         self.scan_width_in_space = 0
 
         self.wavelength, self.intensity = self.spec.get_both()
@@ -332,13 +332,14 @@ class Window(tk.Tk):
                 print('motor homed')
                 # then we would start the scan on one side of the scan width. 
                 # IE move motor to furthest back position
-                self.motor.move_absolute(5 - self.step_size_in_space)
+                self.motor.move_absolute(5 - self.scan_width_in_space)
                 #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
 
             if self.counter < 2 * self.number_of_steps - 1: 
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
+                print(self.motor.is_controller_busy())
                 self.wavelength_v_delay.clear() #clear previous imshow from memory
                 print(self.counter)
                 self.wavelength = self.spec.get_wavelengths()

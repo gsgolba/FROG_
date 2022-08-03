@@ -57,6 +57,7 @@ class Controller:
         self.controller.MoveRelative(0)
         self.wait()
     def move_absolute(self, pos):
+        self.wait()
         self.controller.MoveTo(Decimal(pos), 0)
         self.wait()
     def disable(self):
@@ -71,6 +72,7 @@ class Controller:
     def jog_forward(self):
         self.controller.MoveJog(MotorDirection.Forward, 0)
         self.wait()
+        print('forward done')
     def jog_backward(self):
         self.controller.MoveJog(MotorDirection.Backward, 0)
         self.wait()
