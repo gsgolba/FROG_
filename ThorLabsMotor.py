@@ -11,7 +11,7 @@ from Thorlabs.MotionControl.KCube.StepperMotorCLI import *
 from System import Decimal
 
 UNIT_CONVERTER = 4.901960784313725
-WAIT_TIME = 2
+WAIT_TIME = 1
 class Controller:
     def __init__(self, serial_num, motor_name):
         print('starting')
@@ -71,26 +71,27 @@ class Controller:
     def jog_forward(self):
         self.controller.MoveJog(MotorDirection.Forward, 0)
         self.wait()
-        print('forward done')
     def jog_backward(self):
         self.controller.MoveJog(MotorDirection.Backward, 0)
         self.wait()
-        print('backward done')
+        #print('backward done')
     def wait(self, waitTimeout = WAIT_TIME):
         if self.controller.IsDeviceBusy:
-            print('device busy')
+            #print('device busy')
             time.sleep(waitTimeout)
             self.wait()
         return
+    def is_controller_busy(self):
+        return self.controller.IsDeviceBusy
 def main():
     myController = Controller(str('26001568'), str('ZST225'))
     myController.connect()
     myController.set_jog_step_size(0.5)
     print('my step size: ', myController.get_jog_step_size())
-    myController.jog_forward()
-    print(myController.get_position())
-    myController.jog_backward()
-    myController.move_absolute(3)
+    #myController.jog_forward()
+    #print(myController.get_position())
+    #myController.jog_backward()
+    #myController.move_absolute(3)
     print(myController.get_position())
     myController.move_absolute(0)
     myController.disconnect()

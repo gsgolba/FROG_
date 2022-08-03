@@ -17,7 +17,7 @@ from PIL import ImageTk, Image
 
 SPEED_OF_LIGHT = 3e8
 FEMTO_TO_SEC = 1e-15
-METERS_TO_MILLI = 1e-3
+METERS_TO_MILLI = 1e3
 
 #class Controller_Connect()
 class Window(tk.Tk):
@@ -33,7 +33,9 @@ class Window(tk.Tk):
         self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
         self.motor.connect()
 
-        self.cancel_id = None
+        self.spectral_cancel_id = None
+        self.motor_cancel_id = None
+
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
 
@@ -96,7 +98,7 @@ class Window(tk.Tk):
         '''
         self.spectral_frame = tk.Frame(self, **padding)
         self.spectral_frame.grid(column=2, columnspan=1, row=0, rowspan=1)
-        self.spectral_figure = plt.figure(figsize=(5,5))
+        self.spectral_figure = plt.figure(figsize=(3,3))
 
         self.I_vs_wavelength = self.spectral_figure.add_subplot()
         self.I_vs_wavelength.set_xlabel('Wavelength (nm)')
@@ -138,7 +140,7 @@ class Window(tk.Tk):
         #Graphing the delay
         self.delay_frame = tk.Frame(self, **padding)
         self.delay_frame.grid(column=3, columnspan=1, row=0, rowspan=1)
-        self.delay_figure = plt.figure(figsize=(5,5))
+        self.delay_figure = plt.figure(figsize=(3,3))
 
         self.wavelength_v_delay = self.delay_figure.add_subplot()
         self.wavelength_v_delay.set_ylabel('Wavelength (nm)')
@@ -169,6 +171,7 @@ class Window(tk.Tk):
         self.jog_label = tk.Label(self.motor_frame, text='Jog size (fs)')
         self.jog_label.grid(column=0, row=0)
         self.jog_entry =tk.Entry(self.motor_frame, textvariable=self.jog_size_var)
+        self.jog_entry.bind('<Return>',self.set_jog )
         self.jog_entry.grid(column=1, row=0)
 
         self.thershold_data_label = tk.Label(self.motor_frame, text='Threshold data (%)')
@@ -182,16 +185,13 @@ class Window(tk.Tk):
         self.motor_position_label = tk.Label(self.motor_frame, bg='gray', textvariable=self.motor_position_label_var)
         self.motor_position_label.grid(column=0, row=3)
         
-        self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.home())
+        self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.home)
         self.motor_homing_button.grid(column=0, row=4)
 
-        self.motor_position_button = tk.Button(self.motor_frame, text='Position', command=self.get_motor_position())
-        self.motor_position_button.grid(column=0, row=5)
-
-        self.motor_jogforward_button = tk.Button(self.motor_frame, text='Jog Forward', command=self.jog_forward())
+        self.motor_jogforward_button = tk.Button(self.motor_frame, text='Jog Forward', command=self.jog_forward)
         self.motor_jogforward_button.grid(column=0,row=6)
 
-        self.motor_jogbackward_button = tk.Button(self.motor_frame, text='Jog Backward', command=self.jog_backward())
+        self.motor_jogbackward_button = tk.Button(self.motor_frame, text='Jog Backward', command=self.jog_backward)
         self.motor_jogbackward_button.grid(column=1,row=6)
         
         #Program close
@@ -218,6 +218,23 @@ class Window(tk.Tk):
             self.motor_position_label_var.set(self.motor.get_position())
         except:
             print('position bad')
+    '''
+    def stop_get_motor_position(self):
+        try:
+            if self.motor_cancel_id != None:
+                self.after_cancel(self.motor_cancel_id)
+                self.motor_cancel_id = None
+        except:
+            print('could not cancel motor position getting')
+    '''
+    def set_jog(self,event):
+        try:
+            #convert fs to mm
+            converted_step = int(self.jog_size_var.get()) * FEMTO_TO_SEC * SPEED_OF_LIGHT * METERS_TO_MILLI
+            print(converted_step)
+            self.motor.set_jog_step_size(converted_step)
+        except:
+            print('could not change jog size')
     def home(self):
         try: 
             self.motor.home()
@@ -226,14 +243,21 @@ class Window(tk.Tk):
     def jog_forward(self):
         try:
             self.motor.jog_forward()
+            #if self.motor.is_controller_busy():
+            #    self.motor.wait()
+            self.get_motor_position()
         except:
             print("could not jog forward")
     def jog_backward(self):
         try:
             self.motor.jog_backward()
+            #if self.motor.is_controller_busy():
+            #    self.motor.wait()
+            self.get_motor_position()
         except:
             print("could not jog backward")
-
+#    def is_motor_busy(self):
+#        return self.motor.is_controller_busy()
 
     #Spectrometer Functions
     def connect_spec(self):
@@ -293,11 +317,11 @@ class Window(tk.Tk):
         if self.spec == None:
             self.connect_spec()
         self.graph_spectrum()
-        self.cancel_id=self.after(self.delay, self.spectral_reading)
+        self.spectral_cancel_id=self.after(self.delay, self.spectral_reading)
     def stop_spectral_reading(self):
-        if self.cancel_id != None:
-            self.after_cancel(self.cancel_id)
-            self.cancel_id = None
+        if self.spectral_cancel_id != None:
+            self.after_cancel(self.spectral_cancel_id)
+            self.spectral_cancel_id = None
 
     def delay_reading(self): #may have to delete canvas to make it go faster, possible memory leak
         if self.step_size_var.get() == '' or self.scan_width_var.get() =='' or self.jog_size_var.get() == '':
@@ -306,7 +330,6 @@ class Window(tk.Tk):
             if self.counter == 0: #initialize the number of steps we need to do. And create matrix
                 self.step_size_in_space = float(self.step_size_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
                 self.scan_width_in_space = float(self.scan_width_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
-                #self.motor.set_jog_step_size(self.jog_size_in_space)
                 self.number_of_steps = int(self.scan_width_in_space / self.step_size_in_space)
                 self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps - 1))
                 self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
