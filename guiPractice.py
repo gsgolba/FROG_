@@ -218,7 +218,7 @@ class Window(tk.Tk):
             self.motor_position_label_var.set(self.motor.get_position())
         except:
             print('position bad')
-    def move_motor_position(self):
+    def move_motor_position(self,event):
         try:
             converted_position = int(self.motor_position_entry_var.get()) * FEMTO_TO_MILLI
             self.motor.move_absolute(converted_position)
