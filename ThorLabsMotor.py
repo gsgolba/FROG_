@@ -15,12 +15,14 @@ class Controller:
         print('starting')
         self.serial_num = serial_num
         self.motor_name = motor_name
+        DeviceManagerCLI.BuildDeviceList()
         self.controller = KCubeStepper.CreateKCubeStepper(self.serial_num)
     def connect(self):
         if not self.controller == None:
-            self.controller.Connect(self.serial_num)
-
-            if not self.controller.IsSettingsInitiailized():
+            print(self.serial_num)
+            self.controller.Connect(str(self.serial_num))
+            print('connected!')
+            if not self.controller.IsSettingsInitialized():
                 self.controller.WaitForSettingsInitialized(3000)
             
             self.controller.StartPolling(50) #send updates to PC, in ms
@@ -29,9 +31,10 @@ class Controller:
             time.sleep(0.1)
 
         config =  self.controller.LoadMotorConfiguration(self.serial_num, DeviceConfiguration.DeviceSettingsUseOptionType.UseFileSettings)
-        config.DeviceSettingsName = self.motor_name
+        config.DeviceSettingsName = str(self.motor_name)
         config.UpdateCurrentConfiguration()
         self.controller.SetSettings(self.controller.MotorDeviceSettings, True, False)
+        print('position:', str(self.controller.Position_DeviceUnit))
     def disconnect(self):
         self.controller.StopPolling()
         self.controller.Disconnect(False)
@@ -60,5 +63,17 @@ class Controller:
         jog_params.JogMode = JogParametersBase.JogModes.SingleStep
 
         self.controller.SetJogParams(jog_params)
-    
+    def jog_forward(self):
+        self.controller.MoveJog(MotorDirection.Forward, 10000)
+        self.controller.MoveTo_DeviceUnit(0,70000)
 
+def main():
+    print('nice')
+    myController = Controller('26001568', 'KST101')
+    myController.connect()
+    myController.set_jog_step_size(0.5)
+    myController.jog_forward()
+    myController.disconnect()
+
+if __name__ == "__main__":
+    main()
