@@ -31,7 +31,7 @@ class Controller:
         if not self.controller == None:
             self.controller.Connect(self.serial_num)
 
-            if not self.controller.IsSettingsInitialized():
+            if not self.controller.IsSettingsInitiailized():
                 self.controller.WaitForSettingsInitialized(3000)
             
             self.controller.StartPolling(50) #send updates to PC, in ms
@@ -53,7 +53,7 @@ class Controller:
 
         self.controller.SetJogParams(jog_params)
 
-        #print("Moving Motor")
+        print("Moving Motor")
         self.controller.MoveJog(MotorDirection.Forward, 10000)
         self.controller.MoveTo_DeviceUnit(0, 70000)
     def disconnect(self):
@@ -66,7 +66,47 @@ class Controller:
 
 
 def main():
-    Controller("26001568", "KST101")
+    serial_num = str("26001568")
+    print("starting")
+    DeviceManagerCLI.BuildDeviceList()
+    print("built device list")
+    controller = KCubeStepper.CreateKCubeStepper(serial_num)
+
+    if not controller == None: #I don't like the use of a double negative but kept for now
+        controller.Connect(serial_num)
+
+        if not controller.IsSettingsInitialized(): #if not yet initialized, just wait a bit
+            controller.WaitForSettingsInitialized(3000) #in ms
+        
+        controller.StartPolling(50) #send updates to PC, in ms
+        time.sleep(.1) #in sec
+        controller.EnableDevice()
+        time.sleep(.1)
+
+        config =  controller.LoadMotorConfiguration(serial_num, DeviceConfiguration.DeviceSettingsUseOptionType.UseFileSettings)
+        config.DeviceSettingsName = str("KST101")
+        config.UpdateCurrentConfiguration()
+        controller.SetSettings(controller.MotorDeviceSettings, True, False)
+
+        #print("Homing Motor")
+        #controller.Home(60000)
+
+        jog_params = controller.GetJogParams()
+
+        jog_params.StepSize = Decimal(0.5)
+        jog_params.MaxVelocity = Decimal(10)
+        jog_params.JogMode = JogParametersBase.JogModes.SingleStep
+
+        controller.SetJogParams(jog_params)
+
+        print("Moving Motor")
+        controller.MoveJog(MotorDirection.Forward, 10000)
+        controller.MoveTo_DeviceUnit(0, 70000)
+
+        controller.StopPolling()
+        controller.Disconnect(False)
+
+
 
 if __name__ == '__main__':
     main()
