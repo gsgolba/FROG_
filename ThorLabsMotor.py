@@ -11,7 +11,7 @@ from Thorlabs.MotionControl.KCube.StepperMotorCLI import *
 from System import Decimal
 
 UNIT_CONVERTER = 4.901960784313725
-WAIT_TIME = 5000
+WAIT_TIME = 2
 class Controller:
     def __init__(self, serial_num, motor_name):
         print('starting')
@@ -50,16 +50,15 @@ class Controller:
     def is_homed(self):
         return self.controller.Status.IsHomed
     def home(self):
-        self.wait()
         self.controller.Home(0)
+        self.wait()
     def move_relative(self, dis):
-        self.wait()
         self.controller.SetMoveRelativeDistance(Decimal(dis))
-        workDone = InitializeWaitHandler()
-        self.controller.MoveRelative(workDone)
-    def move_absolute(self, pos):
+        self.controller.MoveRelative(0)
         self.wait()
-        self.controller.MoveTo(Decimal(pos), workDone)
+    def move_absolute(self, pos):
+        self.controller.MoveTo(Decimal(pos), 0)
+        self.wait()
     def disable(self):
         self.controller.DisableDevice()
     def set_jog_step_size(self, step_size):
@@ -68,28 +67,33 @@ class Controller:
         jog_params.JogMode = JogParametersBase.JogModes.SingleStep
         self.controller.SetJogParams(jog_params)
     def get_jog_step_size(self):
-        self.wait()
         return self.controller.GetJogStepSize()
     def jog_forward(self):
+        self.controller.MoveJog(MotorDirection.Forward, 0)
         self.wait()
-        self.controller.MoveJog(MotorDirection.Forward, workDone)
+        print('forward done')
     def jog_backward(self):
+        self.controller.MoveJog(MotorDirection.Backward, 0)
         self.wait()
-        self.controller.MoveJog(MotorDirection.Backward, workDone)
+        print('backward done')
     def wait(self, waitTimeout = WAIT_TIME):
-        if self.controller.IsDeviceBusy():
-            self.controller.Wait(waitTimeout)
+        if self.controller.IsDeviceBusy:
+            print('device busy')
+            time.sleep(waitTimeout)
             self.wait()
-
+        return
 def main():
     myController = Controller(str('26001568'), str('ZST225'))
     myController.connect()
-    myController.set_jog_step_size(1.0)
+    myController.set_jog_step_size(0.5)
     print('my step size: ', myController.get_jog_step_size())
     myController.jog_forward()
-    time.sleep(2)
-    #print(myController.get_position())
+    print(myController.get_position())
     myController.jog_backward()
+    myController.move_absolute(3)
+    print(myController.get_position())
+    myController.move_absolute(0)
+
     myController.disconnect()
 
 if __name__ == "__main__":
