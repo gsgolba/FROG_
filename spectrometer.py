@@ -25,8 +25,9 @@ class Spectrometer:
         return self.spec.wavelengths()
     def get_both(self):
         return self.spec.spectrum()
-    def change_integration_time(self, time): #in ms
+    def change_integration_time(self, time): #in us
         time = int(time)
+        time *= MILLI_TO_SEC
         self.spec.integration_time_micros(time)
     def destroy(self):
         self.spec.close()
@@ -43,8 +44,9 @@ class Virtual_Spectrometer:
         return self.spec.wavelengths()
     def get_both(self):
         return self.spec.spectrum()
-    def change_integration_time(self, time): #in ms
+    def change_integration_time(self, time): #in us
         time = int(time)
+        time *= MILLI_TO_SEC
         self.spec.integration_time_micros(time)
     def destroy(self):
         self.spec.close()
