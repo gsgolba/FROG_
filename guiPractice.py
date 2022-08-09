@@ -39,7 +39,7 @@ class Window(tk.Tk):
         self.scan_width_var.set('50')
 
         self.wavelength, self.intensity = self.spec.get_both()
-        self.delay_matrix = np.zeros((len(self.wavelength), 10)) #hard coded for now
+        #self.delay_matrix = np.zeros((len(self.wavelength), 10)) #hard coded for now
         self.counter = 0
 
         
@@ -54,6 +54,7 @@ class Window(tk.Tk):
         #for serial number and device name
         padding = {'padx': 4, 'pady': 4}
         hw = {'height': 3, 'width': 6}
+
         '''
         #ThorLabs Stepper Motor
         self.motor_frame = tk.Frame(self, relief='groove', bg='blue', background='blue')
@@ -137,7 +138,7 @@ class Window(tk.Tk):
         self.wavelength_v_delay.set_xlabel('Delay (fs)')
         self.wavelength_v_delay.grid(True)
 
-        self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+        #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
         self.delay_canvas = FigureCanvasTkAgg(self.delay_figure, self.delay_frame)
         self.delay_canvas.draw()
@@ -262,7 +263,12 @@ class Window(tk.Tk):
         if self.step_size_var.get() == '' or self.scan_width_var.get() =='':
             msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
         else:
-            if self.counter < 10: #hard coded
+            if self.counter == 0: #initialize the number of steps we need to do. And create matrix
+                self.number_of_steps = int(int(self.scan_width_var.get()) / int(self.step_size_var.get()))
+                self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), self.number_of_steps))
+                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+
+            if self.counter < self.number_of_steps: #hard coded
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
                 self.wavelength_v_delay.clear()
