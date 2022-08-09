@@ -14,7 +14,8 @@ import timeit
 from PIL import ImageTk, Image
 
 
-
+SPEED_OF_LIGHT = 3e8
+FEMTO_TO_SEC = 1e-15
 
 #class Controller_Connect()
 class Window(tk.Tk):
@@ -259,7 +260,8 @@ class Window(tk.Tk):
             msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
         else:
             if self.counter == 0: #initialize the number of steps we need to do. And create matrix
-                self.number_of_steps = int(int(self.scan_width_var.get()) / int(self.step_size_var.get()))
+                self.motor.set_jog_step_size(float(self.step_size_var.get()))
+                self.number_of_steps = int(float(self.scan_width_var.get()) / float(self.step_size_var.get()))
                 self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), self.number_of_steps))
                 self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
