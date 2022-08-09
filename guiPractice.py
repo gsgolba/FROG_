@@ -2,10 +2,9 @@ import tkinter as tk
 import tkinter.messagebox as msgbox
 import numpy as np
 import matplotlib
+from pyparsing import col
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk)
 #import stepperMotor
@@ -29,6 +28,10 @@ class Window(tk.Tk):
         self.cancel_id = None
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
+
+        self.jog_size_var = tk.StringVar()
+        self.jog_size_var.set('5')
+        self.threshold_data_var = tk.StringVar()
 
         self.integration_var = tk.StringVar()
         self.integration_var.set('5')
@@ -58,22 +61,12 @@ class Window(tk.Tk):
         padding = {'padx': 4, 'pady': 4}
         hw = {'height': 3, 'width': 6}
 
-        '''
-        #ThorLabs Stepper Motor
-        self.motor_frame = tk.Frame(self, relief='groove', bg='blue', background='blue')
-        self.motor_frame.grid(column=3,columnspan=2, row=4, rowspan=2)
-        #for now lets just assume we always use the same serial number and motor name
-        self.motor_button = tk.Button(self.motor_frame, text='Connect Motor', command=self.connect_motor)
-        self.motor_button.pack(side='left')
-        self.bruh = tk.Button(self.motor_frame,text='text')
-        self.bruh.pack(side='top')
-        '''
-
-        #Spectrometer
         self.control_frame = tk.Frame(self, relief='groove', **padding)
         self.control_frame.grid(column=0, row=0)
         self.spec_label = tk.Label(self.control_frame, text='FROG controls')
         self.spec_label.grid(column=0,row=0)
+
+        #Spectrometer
         #img = ImageTk.PhotoImage(Image.open('Frog.jpeg'))
         #self.frog_image= tk.Label(self.control_frame, image=img)
         #self.frog_image.grid(column=1, row=0)
@@ -152,12 +145,29 @@ class Window(tk.Tk):
         self.scan_width_label = tk.Label(self.control_frame, text='Delay scan width (fs)')
         self.scan_width_label.grid(column=0, row=6)
 
-        self.delay_scan_button = tk.Button(self.control_frame, text='FROG', command=self.delay_reading)
-        self.delay_scan_button.grid(column=0,row=7)
-
         self.delay_toolbar = NavigationToolbar2Tk(self.delay_canvas, self.delay_frame)
         self.delay_toolbar.update()
+
+        #ThorLabs Stepper Motor
+        #self.motor_frame = tk.Frame(self.control_frame)
+        #self.motor_frame.grid(column=0,columnspan=2, row=7, rowspan=2)
+        #for now lets just assume we always use the same serial number and motor name
+        self.jog_label = tk.Label(self.control_frame, text='Jog size (fs)')
+        self.jog_label.grid(column=0, row=7)
+        self.jog_entry =tk.Entry(self.control_frame, textvariable=self.jog_size_var)
+        self.jog_entry.grid(column=1, row=7)
+
+        self.thershold_data_label = tk.Label(self.control_frame, text='Threshold data (%)')
+        self.thershold_data_label.grid(column=0, row=8)
+        self.thershold_data_entry=tk.Entry(self.control_frame, textvariable=self.threshold_data_var)
+        self.thershold_data_entry.grid(column=1, row=8)
+
+        self.motor_button = tk.Button(self.control_frame, text='Connect Motor')#, command=self.connect_motor)
+        self.motor_button.grid(column=0, row=9)
         
+        self.delay_scan_button = tk.Button(self.control_frame, text='FROG', command=self.delay_reading)
+        self.delay_scan_button.grid(column=0,row=10)
+
         #Program close
         kill_button = tk.Button(self, text='Kill program', command=self.kill_it)
         kill_button.grid(column=0, row=5, **padding)
