@@ -21,7 +21,7 @@ class Spectrometer:
         #create function to change integration time
     def get_intensities(self):
         return self.spec.intensities()
-    def get_wavelengths(self):
+    def get_wavelengths(self): #range from 195.055 - 1112.235, 3648 points
         return self.spec.wavelengths()
     def get_both(self):
         return self.spec.spectrum()
@@ -40,7 +40,7 @@ class Virtual_Spectrometer:
         #create function to change integration time
     def get_intensities(self):
         return self.spec.intensities()
-    def get_wavelengths(self):
+    def get_wavelengths(self): #range from 300 - 1000, 4096 points
         return self.spec.wavelengths()
     def get_both(self):
         return self.spec.spectrum()
