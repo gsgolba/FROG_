@@ -65,7 +65,8 @@ class Controller:
         self.controller.SetJogParams(jog_params)
     def jog_forward(self):
         self.controller.MoveJog(MotorDirection.Forward, 10000)
-        self.controller.MoveTo_DeviceUnit(0,70000)
+    def job_backward(self):
+        self.controller.MoveJog(MotorDirection.Backward, 10000)
 
 def main():
     print('nice')
@@ -73,8 +74,7 @@ def main():
     myController.connect()
     myController.set_jog_step_size(0.5)
     myController.jog_forward()
-    myController.move_absolute(1.0)
-    myController.move_absolute(0.0)
+    myController.job_backward()
     myController.disconnect()
 
 if __name__ == "__main__":
