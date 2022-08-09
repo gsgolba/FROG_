@@ -9,6 +9,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
 NavigationToolbar2Tk)
 #import stepperMotor
 import spectrometer
+import ThorLabsMotor
 import timeit
 from PIL import ImageTk, Image
 
@@ -24,7 +25,11 @@ class Window(tk.Tk):
         #self.rowconfigure(6)
         #self.columnconfigure(6)
 
+        #Automatic Connections
         self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
+        self.motor = ThorLabsMotor.Controller('26001568', 'KST101')
+        self.motor.connect()
+
         self.cancel_id = None
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
@@ -177,10 +182,13 @@ class Window(tk.Tk):
     def connect_motor(self):
         try:
             msgbox.showinfo('umm', 'normally I would connect to the motor here')
-            #stepperMotor.Controller(self.serial_var.get(), self.motor_var.get())
-            #stepperMotor.Controller('26001568', 'KST101')
         except:
             msgbox.showerror('uh oh', 'Could not connect to motor')
+    def disconnect_motor(self):
+        try:
+            self.motor.disconnect()
+        except:
+            print('no motor to disconnect')
 
     #Spectrometer Functions
     def connect_spec(self):
@@ -281,6 +289,7 @@ class Window(tk.Tk):
     def kill_it(self):
         self.destroy()
         #self.disconnect_spec()
+        self.disconnect_motor()
         plt.close('all')
 if __name__ == "__main__":
     window = Window()

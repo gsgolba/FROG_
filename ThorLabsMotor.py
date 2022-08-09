@@ -73,6 +73,8 @@ def main():
     myController.connect()
     myController.set_jog_step_size(0.5)
     myController.jog_forward()
+    myController.move_absolute(1.0)
+    myController.move_absolute(0.0)
     myController.disconnect()
 
 if __name__ == "__main__":
