@@ -29,17 +29,20 @@ class Window(tk.Tk):
         self.cancel_id = None
         self.serial_var = tk.StringVar()
         self.motor_var = tk.StringVar()
+
         self.integration_var = tk.StringVar()
         self.integration_var.set('5')
+
         self.min_wave_var = tk.StringVar()
         self.max_wave_var = tk.StringVar()
+
         self.step_size_var = tk.StringVar()
         self.step_size_var.set('5')
+
         self.scan_width_var = tk.StringVar()
         self.scan_width_var.set('50')
 
         self.wavelength, self.intensity = self.spec.get_both()
-        #self.delay_matrix = np.zeros((len(self.wavelength), 10)) #hard coded for now
         self.counter = 0
 
         
@@ -102,9 +105,6 @@ class Window(tk.Tk):
 
         ### Ability to change the wavelength range
         
-        #self.test_button = tk.Button(self.control_frame, text='Test')
-        #self.test_button.pack()
-
         self.min_wave_entry = tk.Entry(self.control_frame, textvariable=self.min_wave_var)
         self.min_wave_entry.bind('<Return>', self.set_min_wave)
         self.min_wave_entry.grid(column=1,row=1)
@@ -138,8 +138,6 @@ class Window(tk.Tk):
         self.wavelength_v_delay.set_xlabel('Delay (fs)')
         self.wavelength_v_delay.grid(True)
 
-        #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
-
         self.delay_canvas = FigureCanvasTkAgg(self.delay_figure, self.delay_frame)
         self.delay_canvas.draw()
         self.delay_canvas.get_tk_widget().pack()
@@ -157,12 +155,9 @@ class Window(tk.Tk):
         self.delay_scan_button = tk.Button(self.control_frame, text='FROG', command=self.delay_reading)
         self.delay_scan_button.grid(column=0,row=7)
 
-
-
         self.delay_toolbar = NavigationToolbar2Tk(self.delay_canvas, self.delay_frame)
         self.delay_toolbar.update()
         
-
         #Program close
         kill_button = tk.Button(self, text='Kill program', command=self.kill_it)
         kill_button.grid(column=0, row=5, **padding)
@@ -197,11 +192,11 @@ class Window(tk.Tk):
             self.I_vs_wavelength.clear() #not sure what axes function wouldn't get rid of the axes labels
             #so I just write in the labels and grid lines each time we graph (definitely not optimal)
             self.wavelength, self.intensities = self.spec.get_both()
-            #print(len(wavelength))
             self.I_vs_wavelength.plot(self.wavelength, self.intensities)
             self.I_vs_wavelength.set_xlabel('Wavelength (nm)')
             self.I_vs_wavelength.set_ylabel('Intensity (a.u.)')
             self.I_vs_wavelength.grid(True)
+
             #if we had bounds, enforce them again
             left,right = self.I_vs_wavelength.get_xlim()
             left = int(left)
@@ -241,25 +236,7 @@ class Window(tk.Tk):
             self.after_cancel(self.cancel_id)
             self.cancel_id = None
 
-    '''
-    def delay_reading(self):
-        if self.step_size_var.get() == '' or self.scan_width_var.get() =='':
-            msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
-        else:
-            number_of_steps = int(int(self.scan_width_var.get()) / int(self.step_size_var.get()))
-            self.wavelength = self.spec.get_wavelengths()
-            #self.delay_matrix = np.zeros((len(self.wavelength), number_of_steps))
-            self.delay_matrix = np.zeros((len(self.wavelength), number_of_steps))
-            im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
-            for i in range(number_of_steps):
-                self.delay_matrix[:,i] = self.spec.get_intensities()
-                print(i)
-                #im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
-                im.set_data(self.delay_matrix)
-                self.delay_canvas.draw()
-                self.update()
-    '''
-    def delay_reading(self): #may have to delete canvas to make it go faster, think there is memory leak
+    def delay_reading(self): #may have to delete canvas to make it go faster, possible memory leak
         if self.step_size_var.get() == '' or self.scan_width_var.get() =='':
             msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
         else:
@@ -268,15 +245,14 @@ class Window(tk.Tk):
                 self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), self.number_of_steps))
                 self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
-            if self.counter < self.number_of_steps: #hard coded
+            if self.counter < self.number_of_steps: 
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
-                self.wavelength_v_delay.clear()
+                self.wavelength_v_delay.clear() #clear previous imshow from memory
                 print(self.counter)
-                #print(len(self.wavelength))
                 self.wavelength = self.spec.get_wavelengths()
                 self.delay_matrix[:, self.counter] = self.spec.get_intensities()
-                #self.im.set_data(self.delay_matrix)#, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+                #imshow set data hasn't been working for my so I just imshow again
                 self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
                 self.delay_canvas.draw()
 
@@ -289,11 +265,8 @@ class Window(tk.Tk):
                 self.wavelength_v_delay.set_ylabel('Wavelength (nm)')
                 self.wavelength_v_delay.set_xlabel('Delay (fs)')
                 self.wavelength_v_delay.grid(True)
+                self.delay_canvas.draw()
                 print('FROG done')
-
-            
-
-
 
     def kill_it(self):
         self.destroy()
