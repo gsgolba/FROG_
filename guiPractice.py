@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
+from matplotlib import image
 import numpy as np
 import matplotlib
 from pyparsing import col
@@ -16,13 +17,14 @@ from PIL import ImageTk, Image
 
 SPEED_OF_LIGHT = 3e8
 FEMTO_TO_SEC = 1e-15
+METERS_TO_MILLI = 1e-3
 
 #class Controller_Connect()
 class Window(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Hello Tkinter")
-        self.geometry('1400x700')
+        self.title("FROG")
+        self.geometry('1400x800')
         #self.rowconfigure(6)
         #self.columnconfigure(6)
 
@@ -37,6 +39,7 @@ class Window(tk.Tk):
 
         self.jog_size_var = tk.StringVar()
         self.jog_size_var.set('5')
+        self.jog_size_in_space = 0
         self.threshold_data_var = tk.StringVar()
 
         self.integration_var = tk.StringVar()
@@ -47,12 +50,17 @@ class Window(tk.Tk):
 
         self.step_size_var = tk.StringVar()
         self.step_size_var.set('5')
+        self.step_size_in_space = 0
 
         self.scan_width_var = tk.StringVar()
         self.scan_width_var.set('50')
+        self.scan_width_in_space = 0
 
         self.wavelength, self.intensity = self.spec.get_both()
         self.counter = 0
+
+        self.motor_position_label_var = tk.StringVar()
+        self.motor_position_label_var.set('Position')
 
         
         self.delay = 1 #in ms
@@ -97,7 +105,7 @@ class Window(tk.Tk):
 
         self.spectral_canvas = FigureCanvasTkAgg(self.spectral_figure, self.spectral_frame)
         self.spectral_canvas.draw()
-        self.spectral_canvas.get_tk_widget().pack()
+        self.spectral_canvas.get_tk_widget().pack(expand=True)
 
         self.spectral_toolbar = NavigationToolbar2Tk(self.spectral_canvas, self.spectral_frame)
         self.spectral_toolbar.update()
@@ -139,7 +147,7 @@ class Window(tk.Tk):
 
         self.delay_canvas = FigureCanvasTkAgg(self.delay_figure, self.delay_frame)
         self.delay_canvas.draw()
-        self.delay_canvas.get_tk_widget().pack()
+        self.delay_canvas.get_tk_widget().pack(expand=True)
 
         self.step_entry = tk.Entry(self.control_frame,textvariable=self.step_size_var)
         self.step_entry.grid(column=1, row=5)
@@ -155,28 +163,37 @@ class Window(tk.Tk):
         self.delay_toolbar.update()
 
         #ThorLabs Stepper Motor
-        #self.motor_frame = tk.Frame(self.control_frame)
-        #self.motor_frame.grid(column=0,columnspan=2, row=7, rowspan=2)
-        #for now lets just assume we always use the same serial number and motor name
-        self.jog_label = tk.Label(self.control_frame, text='Jog size (fs)')
-        self.jog_label.grid(column=0, row=7)
-        self.jog_entry =tk.Entry(self.control_frame, textvariable=self.jog_size_var)
-        self.jog_entry.grid(column=1, row=7)
+        self.motor_frame = tk.Frame(self, **padding)
+        self.motor_frame.grid(column=0, row=1)
 
-        self.thershold_data_label = tk.Label(self.control_frame, text='Threshold data (%)')
-        self.thershold_data_label.grid(column=0, row=8)
-        self.thershold_data_entry=tk.Entry(self.control_frame, textvariable=self.threshold_data_var)
-        self.thershold_data_entry.grid(column=1, row=8)
+        self.jog_label = tk.Label(self.motor_frame, text='Jog size (fs)')
+        self.jog_label.grid(column=0, row=0)
+        self.jog_entry =tk.Entry(self.motor_frame, textvariable=self.jog_size_var)
+        self.jog_entry.grid(column=1, row=0)
 
-        self.motor_button = tk.Button(self.control_frame, text='Connect Motor')#, command=self.connect_motor)
-        self.motor_button.grid(column=0, row=9)
+        self.thershold_data_label = tk.Label(self.motor_frame, text='Threshold data (%)')
+        self.thershold_data_label.grid(column=0, row=1)
+        self.thershold_data_entry=tk.Entry(self.motor_frame, textvariable=self.threshold_data_var)
+        self.thershold_data_entry.grid(column=1, row=1)
+
+        self.motor_button = tk.Button(self.motor_frame, text='Connect Motor')#, command=self.connect_motor)
+        self.motor_button.grid(column=0, row=2)
+
+        self.motor_position_label = tk.Label(self.motor_frame, bg='gray', textvariable=self.motor_position_label_var)
+        self.motor_position_label.grid(column=0, row=3)
         
-        self.delay_scan_button = tk.Button(self.control_frame, text='FROG', command=self.delay_reading)
-        self.delay_scan_button.grid(column=0,row=10)
+        self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.motor.home())
+        self.motor_homing_button.grid(column=0, row=4)
 
+        self.motor_position_button = tk.Button(self.motor_frame, text='Position', command=self.get_motor_position())
+        self.motor_position_button.grid(column=0, row=5)
+        
         #Program close
+        self.delay_scan_button = tk.Button(self, text='FROG', command=self.delay_reading)
+        self.delay_scan_button.grid(column=0,row=5)
+
         kill_button = tk.Button(self, text='Kill program', command=self.kill_it)
-        kill_button.grid(column=0, row=5, **padding)
+        kill_button.grid(column=0, row=6, **padding)
 
 
     #Motor Functions
@@ -190,6 +207,14 @@ class Window(tk.Tk):
             self.motor.disconnect()
         except:
             print('no motor to disconnect')
+    def get_motor_position(self):
+        try:
+            self.motor_position_label_var.set(self.motor.get_position())
+        except:
+            print('position bad')
+
+
+
 
     #Spectrometer Functions
     def connect_spec(self):
@@ -256,16 +281,18 @@ class Window(tk.Tk):
             self.cancel_id = None
 
     def delay_reading(self): #may have to delete canvas to make it go faster, possible memory leak
-        if self.step_size_var.get() == '' or self.scan_width_var.get() =='':
+        if self.step_size_var.get() == '' or self.scan_width_var.get() =='' or self.jog_size_var.get() == '':
             msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
         else:
             if self.counter == 0: #initialize the number of steps we need to do. And create matrix
-                self.motor.set_jog_step_size(float(self.step_size_var.get()))
-                self.number_of_steps = int(float(self.scan_width_var.get()) / float(self.step_size_var.get()))
-                self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), self.number_of_steps))
-                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+                self.step_size_in_space = float(self.step_size_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
+                self.scan_width_in_space = float(self.scan_width_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
+                #self.motor.set_jog_step_size(self.jog_size_in_space)
+                self.number_of_steps = int(self.scan_width_in_space / self.step_size_in_space)
+                self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps - 1))
+                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
-            if self.counter < self.number_of_steps: 
+            if self.counter < 2 * self.number_of_steps - 1: 
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
                 self.wavelength_v_delay.clear() #clear previous imshow from memory
@@ -273,7 +300,7 @@ class Window(tk.Tk):
                 self.wavelength = self.spec.get_wavelengths()
                 self.delay_matrix[:, self.counter] = self.spec.get_intensities()
                 #imshow set data hasn't been working for my so I just imshow again
-                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[0, int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
                 self.delay_canvas.draw()
 
 
