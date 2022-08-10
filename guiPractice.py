@@ -30,7 +30,7 @@ class Window(tk.Tk):
 
         #Automatic Connections
         self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
-        self.motor = ThorLabsMotor.Controller('26001568', 'KST101')
+        self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
         self.motor.connect()
 
         self.cancel_id = None
@@ -182,7 +182,7 @@ class Window(tk.Tk):
         self.motor_position_label = tk.Label(self.motor_frame, bg='gray', textvariable=self.motor_position_label_var)
         self.motor_position_label.grid(column=0, row=3)
         
-        self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.motor.home())
+        self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.home())
         self.motor_homing_button.grid(column=0, row=4)
 
         self.motor_position_button = tk.Button(self.motor_frame, text='Position', command=self.get_motor_position())
@@ -212,8 +212,11 @@ class Window(tk.Tk):
             self.motor_position_label_var.set(self.motor.get_position())
         except:
             print('position bad')
-
-
+    def home(self):
+        try: 
+            self.motor.home()
+        except:
+            print("could not home")
 
 
     #Spectrometer Functions

@@ -10,6 +10,7 @@ from Thorlabs.MotionControl.GenericMotorCLI.ControlParameters import JogParamete
 from Thorlabs.MotionControl.KCube.StepperMotorCLI import *
 from System import Decimal
 
+UNIT_CONVERTER = 4.901960784313725
 class Controller:
     def __init__(self, serial_num, motor_name):
         print('starting')
@@ -19,9 +20,7 @@ class Controller:
         self.controller = KCubeStepper.CreateKCubeStepper(self.serial_num)
     def connect(self):
         if not self.controller == None:
-            print(self.serial_num)
-            self.controller.Connect(str(self.serial_num))
-            print('connected!')
+            self.controller.Connect(self.serial_num)
             if not self.controller.IsSettingsInitialized():
                 self.controller.WaitForSettingsInitialized(3000)
             
@@ -34,7 +33,8 @@ class Controller:
         config.DeviceSettingsName = str(self.motor_name)
         config.UpdateCurrentConfiguration()
         self.controller.SetSettings(self.controller.MotorDeviceSettings, True, False)
-        print('position:', str(self.controller.Position_DeviceUnit))
+
+
     def disconnect(self):
         self.controller.StopPolling()
         self.controller.Disconnect(False)
@@ -61,21 +61,22 @@ class Controller:
         jog_params = self.controller.GetJogParams()
         jog_params.StepSize = Decimal(step_size)
         jog_params.JogMode = JogParametersBase.JogModes.SingleStep
+        self.controller.SetJogParams(jog_params)
     def get_jog_step_size(self):
-        return self.controller.GetJogStepSize_DeviceUnit()
+        return self.controller.GetJogStepSize()
     def jog_forward(self):
-        self.controller.MoveJog(MotorDirection.Forward, 10000)
-    def job_backward(self):
+        self.controller.MoveJog(MotorDirection.Forward, 70000)
+    def jog_backward(self):
         self.controller.MoveJog(MotorDirection.Backward, 10000)
-
 def main():
-    print('nice')
-    myController = Controller('26001568', 'KST101')
+    myController = Controller(str('26001568'), str('ZST225'))
     myController.connect()
-    myController.set_jog_step_size(0.5)
+    myController.set_jog_step_size(1.0)
     print('my step size: ', myController.get_jog_step_size())
-    #myController.jog_forward()
-    #myController.job_backward()
+    myController.jog_forward()
+    time.sleep(2)
+    #print(myController.get_position())
+    myController.jog_backward()
     myController.disconnect()
 
 if __name__ == "__main__":
