@@ -61,8 +61,8 @@ class Controller:
         jog_params = self.controller.GetJogParams()
         jog_params.StepSize = Decimal(step_size)
         jog_params.JogMode = JogParametersBase.JogModes.SingleStep
-
-        self.controller.SetJogParams(jog_params)
+    def get_jog_step_size(self):
+        return self.controller.GetJogStepSize_DeviceUnit()
     def jog_forward(self):
         self.controller.MoveJog(MotorDirection.Forward, 10000)
     def job_backward(self):
@@ -73,8 +73,9 @@ def main():
     myController = Controller('26001568', 'KST101')
     myController.connect()
     myController.set_jog_step_size(0.5)
-    myController.jog_forward()
-    myController.job_backward()
+    print('my step size: ', myController.get_jog_step_size())
+    #myController.jog_forward()
+    #myController.job_backward()
     myController.disconnect()
 
 if __name__ == "__main__":
