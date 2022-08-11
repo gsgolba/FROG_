@@ -322,11 +322,19 @@ class Window(tk.Tk):
             msgbox.showerror('Uh Oh', 'Need to input step size and scan width')
         else:
             if self.counter == 0: #initialize the number of steps we need to do. And create matrix
-                self.step_size_in_space = float(self.step_size_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
-                self.scan_width_in_space = float(self.scan_width_var.get()) * SPEED_OF_LIGHT * FEMTO_TO_SEC
+                self.step_size_in_space = float(self.step_size_var.get()) * FEMTO_TO_MILLI
+                self.scan_width_in_space = float(self.scan_width_var.get()) * FEMTO_TO_MILLI
                 self.number_of_steps = int(self.scan_width_in_space / self.step_size_in_space)
                 self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps - 1))
-                self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+                ### at this point we should move the motor to its home position
+                #for now lets just hard code in a home position
+                self.motor.move_absolute(5)
+                print('motor homed')
+                # then we would start the scan on one side of the scan width. 
+                # IE move motor to furthest back position
+                self.motor.move_absolute(5 - self.step_size_in_space)
+                #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
+
 
             if self.counter < 2 * self.number_of_steps - 1: 
                 #for item in self.delay_canvas.get_tk_widget().find_all():
