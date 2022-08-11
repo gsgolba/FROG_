@@ -18,6 +18,7 @@ from PIL import ImageTk, Image
 SPEED_OF_LIGHT = 3e8
 FEMTO_TO_SEC = 1e-15
 METERS_TO_MILLI = 1e3
+FEMTO_TO_MILLI = SPEED_OF_LIGHT * FEMTO_TO_SEC * METERS_TO_MILLI
 
 #class Controller_Connect()
 class Window(tk.Tk):
@@ -41,7 +42,9 @@ class Window(tk.Tk):
 
         self.jog_size_var = tk.StringVar()
         self.jog_size_var.set('5')
-        self.jog_size_in_space = 0
+
+        self.motor_position_entry_var = tk.StringVar()
+
         self.threshold_data_var = tk.StringVar()
 
         self.integration_var = tk.StringVar()
@@ -86,16 +89,7 @@ class Window(tk.Tk):
         #img = ImageTk.PhotoImage(Image.open('Frog.jpeg'))
         #self.frog_image= tk.Label(self.control_frame, image=img)
         #self.frog_image.grid(column=1, row=0)
-        '''
-        self.spec_connect_button = tk.Button(self.control_frame, text='Connect Spectrometer', command=self.connect_spec)
-        self.spec_connect_button.pack(side = 'left', fill='both')
-        self.spec_disconnect_button = tk.Button(self.control_frame, text='Disconnect Spectrometer', command=self.disconnect_spec)
-        self.spec_disconnect_button.pack(side='left',fill='both')
-        
-        ## Creating plot from spectrometer spectrum measurement
-        self.graph_button = tk.Button(self.control_frame, text='Spectrum', command=self.graph_spectrum, **hw)
-        self.graph_button.pack(side='left',fill='both')
-        '''
+  
         self.spectral_frame = tk.Frame(self, **padding)
         self.spectral_frame.grid(column=2, columnspan=1, row=0, rowspan=1)
         self.spectral_figure = plt.figure(figsize=(3,3))
@@ -170,7 +164,7 @@ class Window(tk.Tk):
 
         self.jog_label = tk.Label(self.motor_frame, text='Jog size (fs)')
         self.jog_label.grid(column=0, row=0)
-        self.jog_entry =tk.Entry(self.motor_frame, textvariable=self.jog_size_var)
+        self.jog_entry = tk.Entry(self.motor_frame, textvariable=self.jog_size_var)
         self.jog_entry.bind('<Return>',self.set_jog )
         self.jog_entry.grid(column=1, row=0)
 
@@ -193,6 +187,12 @@ class Window(tk.Tk):
 
         self.motor_jogbackward_button = tk.Button(self.motor_frame, text='Jog Backward', command=self.jog_backward)
         self.motor_jogbackward_button.grid(column=1,row=6)
+
+        self.motor_position_entry_label = tk.Label(self.motor_frame, text='Move to Position (fs)')
+        self.motor_position_entry_label.grid(column=0, row=7)
+        self.motor_position_entry = tk.Entry(self.motor_frame, textvariable=self.motor_position_entry_var)
+        self.motor_position_entry.bind('<Return>', self.move_motor_position)
+        self.motor_position_entry.grid(column=1, row=7)
         
         #Program close
         self.delay_scan_button = tk.Button(self, text='FROG', command=self.delay_reading)
@@ -218,19 +218,16 @@ class Window(tk.Tk):
             self.motor_position_label_var.set(self.motor.get_position())
         except:
             print('position bad')
-    '''
-    def stop_get_motor_position(self):
+    def move_motor_position(self):
         try:
-            if self.motor_cancel_id != None:
-                self.after_cancel(self.motor_cancel_id)
-                self.motor_cancel_id = None
+            converted_position = int(self.motor_position_entry_var.get()) * FEMTO_TO_MILLI
+            self.motor.move_absolute(converted_position)
         except:
-            print('could not cancel motor position getting')
-    '''
+            print('movement did not work')
     def set_jog(self,event):
         try:
             #convert fs to mm
-            converted_step = int(self.jog_size_var.get()) * FEMTO_TO_SEC * SPEED_OF_LIGHT * METERS_TO_MILLI
+            converted_step = int(self.jog_size_var.get()) * FEMTO_TO_MILLI
             print(converted_step)
             self.motor.set_jog_step_size(converted_step)
         except:
@@ -256,9 +253,6 @@ class Window(tk.Tk):
             self.get_motor_position()
         except:
             print("could not jog backward")
-#    def is_motor_busy(self):
-#        return self.motor.is_controller_busy()
-
     #Spectrometer Functions
     def connect_spec(self):
         try:
