@@ -53,6 +53,7 @@ class Controller:
         self.controller.Home(0)
         self.wait()
     def move_relative(self, dis):
+        print('do relative move')
         self.controller.SetMoveRelativeDistance(Decimal(dis))
         self.controller.MoveRelative(0)
         self.wait()
@@ -95,6 +96,7 @@ def main():
     #myController.jog_backward()
     #myController.move_absolute(3)
     print(myController.get_position())
+    myController.move_absolute(3)
     myController.move_absolute(0)
     myController.disconnect()
 

@@ -42,7 +42,7 @@ class Window(tk.Tk):
         self.motor_var = tk.StringVar()
 
         self.jog_size_var = tk.StringVar()
-        self.jog_size_var.set('5')
+        self.jog_size_var.set('50')
 
         self.motor_position_entry_var = tk.StringVar()
 
@@ -257,8 +257,9 @@ class Window(tk.Tk):
     def wait_for_motor(self):
         if self.motor.is_controller_busy():
             print('gots to wait')
-            time.sleep(1)
-            self.wait_for_motor
+            time.sleep(0.5)
+            self.wait_for_motor()
+        print('done wait')
         return
 
 
@@ -335,33 +336,36 @@ class Window(tk.Tk):
                 self.step_size_in_space = float(self.step_size_var.get()) * FEMTO_TO_MILLI
                 self.scan_width_in_space = float(self.scan_width_var.get()) * FEMTO_TO_MILLI
                 self.number_of_steps = int(self.scan_width_in_space / self.step_size_in_space)
-                self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps - 1))
+                self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps))
                 ### at this point we should move the motor to its home position
                 #for now lets just hard code in a home position
                 self.motor.move_absolute(5)
+                self.wait_for_motor()
                 print('motor homed')
                 # then we would start the scan on one side of the scan width. 
                 # IE move motor to furthest back position
                 self.motor.move_absolute(5 - self.scan_width_in_space)
+                self.wait_for_motor()
                 #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
 
-            if self.counter < 2 * self.number_of_steps - 1: 
-                self.wait_for_motor
+            while self.counter < 2 * self.number_of_steps: 
+                self.wait_for_motor()
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
                 print(self.motor.is_controller_busy())
                 self.wavelength_v_delay.clear() #clear previous imshow from memory
                 print(self.counter)
                 self.wavelength = self.spec.get_wavelengths()
-                self.delay_matrix[:, self.counter] = self.spec.get_intensities()
-                #imshow set data hasn't been working for my so I just imshow again
+                self.delay_matrix[:, self.counter] = self.spec.get_intensities() #is this grabbing data at the right time?
+                self.motor.move_relative(self.step_size_in_space)
+
+                #imshow set data hasn't been working for me so I just imshow again
                 self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
                 self.delay_canvas.draw()
-
+                self.update()
 
                 self.counter += 1
-                self.after(self.delay, self.delay_reading)
 
             else:
                 self.counter = 0
