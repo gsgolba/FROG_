@@ -187,6 +187,12 @@ class Window(tk.Tk):
 
         self.motor_position_button = tk.Button(self.motor_frame, text='Position', command=self.get_motor_position())
         self.motor_position_button.grid(column=0, row=5)
+
+        self.motor_jogforward_button = tk.Button(self.motor_frame, text='Jog Forward', command=self.jog_forward())
+        self.motor_jogforward_button.grid(column=0,row=6)
+
+        self.motor_jogbackward_button = tk.Button(self.motor_frame, text='Jog Backward', command=self.jog_backward())
+        self.motor_jogbackward_button.grid(column=1,row=6)
         
         #Program close
         self.delay_scan_button = tk.Button(self, text='FROG', command=self.delay_reading)
@@ -217,6 +223,16 @@ class Window(tk.Tk):
             self.motor.home()
         except:
             print("could not home")
+    def jog_forward(self):
+        try:
+            self.motor.jog_forward()
+        except:
+            print("could not jog forward")
+    def jog_backward(self):
+        try:
+            self.motor.jog_backward()
+        except:
+            print("could not jog backward")
 
 
     #Spectrometer Functions

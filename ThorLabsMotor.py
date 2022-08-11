@@ -93,7 +93,6 @@ def main():
     myController.move_absolute(3)
     print(myController.get_position())
     myController.move_absolute(0)
-
     myController.disconnect()
 
 if __name__ == "__main__":
