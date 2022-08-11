@@ -52,9 +52,11 @@ class Controller:
         self.controller.Home(0)
     def move_relative(self, dis):
         self.controller.SetMoveRelativeDistance(Decimal(dis))
-        self.controller.MoveRelative(0)
+        workDone = InitializeWaitHandler()
+        self.controller.MoveRelative(workDone)
     def move_absolute(self, pos):
-        self.controller.MoveTo(Decimal(pos), 0)
+        workDone = InitializeWaitHandler()
+        self.controller.MoveTo(Decimal(pos), workDone)
     def disable(self):
         self.controller.DisableDevice()
     def set_jog_step_size(self, step_size):
@@ -65,9 +67,11 @@ class Controller:
     def get_jog_step_size(self):
         return self.controller.GetJogStepSize()
     def jog_forward(self):
-        self.controller.MoveJog(MotorDirection.Forward, 70000)
+        workDone = InitializeWaitHandler()
+        self.controller.MoveJog(MotorDirection.Forward, workDone)
     def jog_backward(self):
-        self.controller.MoveJog(MotorDirection.Backward, 10000)
+        workDone = InitializeWaitHandler()
+        self.controller.MoveJog(MotorDirection.Backward, workDone)
 def main():
     myController = Controller(str('26001568'), str('ZST225'))
     myController.connect()
