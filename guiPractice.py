@@ -8,11 +8,12 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk)
-#import stepperMotor
 import spectrometer
 import ThorLabsMotor
 import timeit
 from PIL import ImageTk, Image
+import time
+#from threading import Thread
 
 
 SPEED_OF_LIGHT = 3e8
@@ -253,6 +254,15 @@ class Window(tk.Tk):
             self.get_motor_position()
         except:
             print("could not jog backward")
+    def wait_for_motor(self):
+        if self.motor.is_controller_busy():
+            print('gots to wait')
+            time.sleep(1)
+            self.wait_for_motor
+        return
+
+
+
     #Spectrometer Functions
     def connect_spec(self):
         try:
@@ -337,6 +347,7 @@ class Window(tk.Tk):
 
 
             if self.counter < 2 * self.number_of_steps - 1: 
+                self.wait_for_motor
                 #for item in self.delay_canvas.get_tk_widget().find_all():
                 #    self.delay_canvas.get_tk_widget().delete(item)
                 print(self.motor.is_controller_busy())
