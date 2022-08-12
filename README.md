@@ -2,14 +2,14 @@
 Creating an API for spectrometer and motor controller
 **Currently only compatible with Windows OS**
 
-#Necessary Downloads
+# Necessary Downloads
 * Download Thorlabs kinesis software for the DLLS: https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=Motion_Control&viewtab=0
-** There is a file called Thorlabs.MotionControl.DotNet_API.chm which is basically the documentation for all the functions that the motor controller software provides
-*A couple of Python libraries to import:
-** tkinter
-** seabreeze
-** seatease
-** pythonnet
+  * There is a file called Thorlabs.MotionControl.DotNet_API.chm which is basically the documentation for all the functions that the motor controller software provides
+* A couple of Python libraries to import:
+  * tkinter
+  * seabreeze
+  * seatease
+  * pythonnet
 
 #Some GOATED githubs:
 * [SeaBreeze](https://github.com/ap--/python-seabreeze): Lets you use Ocean Optics spectrometer through python
