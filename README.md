@@ -21,4 +21,3 @@ Creating an API for spectrometer and motor controller
 * Stepper Motor seems to be moving backwards when jogging forward and vice versa. May be due to not being homed.
 ## Both issues above seem to only be happening with the Dell computer. Using the exact same commit on the virtual machine results in no problem
 * Stepper motor has trouble reading position in gui (whenever we call the getter function to get motor position, it happens instantly as it jogs, which then reads out the poition before finishing the jog step). Could solve by doing time.sleep, but this would slow down the gui and exacerbate the issue below
-* Whenever we move the motor, it stops the output reading of the spectrometer. Doesn't seem to cause an error, continues running after motor is finished. **Possible optimization**
