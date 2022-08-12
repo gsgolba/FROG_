@@ -6,9 +6,12 @@ import seabreeze.spectrometers as S
 MILLI_TO_SEC = 1000
 def main(): 
     print('not meant to be used as primary file')
-    spec = s.Spectrometer.from_first_available()
+    print(S.list_devices())
+    print(s.list_devices())
+    spec = S.Spectrometer.from_first_available()
     min_, max_ = spec.integration_time_micros_limits
     print(min_, max_)
+    spec.close()
 
 #if we have time, create a super class
 #for both virtual and real spectrometer

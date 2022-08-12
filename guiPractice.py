@@ -31,7 +31,7 @@ class Window(tk.Tk):
         #self.columnconfigure(6)
 
         #Automatic Connections
-        self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
+        self.spec = spectrometer.Spectrometer() #change whether real or virtual
         self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
         self.motor.connect()
 
