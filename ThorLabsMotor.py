@@ -14,7 +14,6 @@ UNIT_CONVERTER = 4.901960784313725
 WAIT_TIME = 1
 class Controller:
     def __init__(self, serial_num, motor_name):
-        print('starting')
         self.serial_num = serial_num
         self.motor_name = motor_name
         DeviceManagerCLI.BuildDeviceList()
@@ -34,8 +33,6 @@ class Controller:
         config.DeviceSettingsName = str(self.motor_name)
         config.UpdateCurrentConfiguration()
         self.controller.SetSettings(self.controller.MotorDeviceSettings, True, False)
-
-
     def disconnect(self):
         self.controller.StopPolling()
         self.controller.Disconnect(False)
@@ -53,7 +50,7 @@ class Controller:
         self.controller.Home(0)
         self.wait()
     def move_relative(self, dis):
-        print('do relative move')
+        #print('do relative move')
         self.controller.SetMoveRelativeDistance(Decimal(dis))
         self.controller.MoveRelative(0)
         self.wait()
@@ -73,7 +70,7 @@ class Controller:
     def jog_forward(self):
         self.controller.MoveJog(MotorDirection.Forward, 0)
         self.wait()
-        print('forward done')
+        #print('forward done')
     def jog_backward(self):
         self.controller.MoveJog(MotorDirection.Backward, 0)
         self.wait()
@@ -87,6 +84,7 @@ class Controller:
     def is_controller_busy(self):
         return self.controller.IsDeviceBusy
 def main():
+    #Below is just code to test whether we can move the motor accordingly
     myController = Controller(str('26001568'), str('ZST225'))
     myController.connect()
     myController.set_jog_step_size(0.5)
