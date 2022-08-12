@@ -77,7 +77,6 @@ class Window(tk.Tk):
         
 
     def widget_creation(self):
-        #for serial number and device name
         padding = {'padx': 4, 'pady': 4}
         hw = {'height': 3, 'width': 6}
 
@@ -87,9 +86,6 @@ class Window(tk.Tk):
         self.spec_label.grid(column=0,row=0)
 
         #Spectrometer
-        #img = ImageTk.PhotoImage(Image.open('Frog.jpeg'))
-        #self.frog_image= tk.Label(self.control_frame, image=img)
-        #self.frog_image.grid(column=1, row=0)
   
         self.spectral_frame = tk.Frame(self, **padding)
         self.spectral_frame.grid(column=2, columnspan=1, row=0, rowspan=1)
@@ -351,9 +347,6 @@ class Window(tk.Tk):
 
             while self.counter < 2 * self.number_of_steps: 
                 self.wait_for_motor()
-                #for item in self.delay_canvas.get_tk_widget().find_all():
-                #    self.delay_canvas.get_tk_widget().delete(item)
-                print(self.motor.is_controller_busy())
                 self.wavelength_v_delay.clear() #clear previous imshow from memory
                 print(self.counter)
                 self.wavelength = self.spec.get_wavelengths()
