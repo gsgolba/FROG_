@@ -69,7 +69,7 @@ class Window(tk.Tk):
         self.motor_position_label_var.set('Position')
 
         self.saved_motor_position_label_var = tk.StringVar()
-        self.saved_motor_position_label_var.set('Current Saved Position')
+        self.saved_motor_position_label_var.set(self.motor.get_saved_position())
 
         
         self.delay = 1 #in ms

@@ -98,6 +98,9 @@ class Controller:
     def move_to_saved_motor_position(self):
         with open('saved_motor_position.p', 'rb') as f:
             self.move_absolute(pickle.load(f))
+    def get_saved_position(self):
+        with open('saved_motor_position.p', 'rb') as f:
+            return str(pickle.load(f))
         
 def main():
     #Below is just code to test whether we can move the motor accordingly
