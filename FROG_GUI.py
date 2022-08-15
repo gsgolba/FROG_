@@ -26,7 +26,7 @@ class Window(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("FROG")
-        self.geometry('1400x900')
+        self.geometry('1400x600')
         #self.rowconfigure(6)
         #self.columnconfigure(6)
 
@@ -260,11 +260,8 @@ class Window(tk.Tk):
         except:
             print("could not jog backward")
     def wait_for_motor(self):
-        #time.sleep(0.05) 
-        #sometimes program does not recognize
-        # motor began to move. Sleep to let it catch up
         if self.motor.is_controller_busy():
-            print('gots to wait')
+            print('wait for motor')
             time.sleep(0.5)
             self.wait_for_motor()
         print('done wait')
@@ -354,7 +351,6 @@ class Window(tk.Tk):
                 ### at this point we should move the motor to its desired position
                 self.move_to_save_position()
                 self.wait_for_motor()
-                print('motor homed')
                 # then we would start the scan on one side of the scan width. 
                 # IE move motor to furthest back position
                 self.motor.move_relative(-self.scan_width_in_space)
@@ -364,8 +360,8 @@ class Window(tk.Tk):
             while self.counter < 2 * self.number_of_steps: 
                 self.wait_for_motor()
                 self.wavelength_v_delay.clear() #clear previous imshow from memory
-                print(self.counter)
-                self.wavelength = self.spec.get_wavelengths()
+                #print(self.counter)
+                #self.wavelength = self.spec.get_wavelengths()
                 self.delay_matrix[:, self.counter] = self.spec.get_intensities() #is this grabbing data at the right time?
                 self.motor.move_relative(self.step_size_in_space)
 
