@@ -20,4 +20,5 @@ Creating an API for spectrometer and motor controller
 * Stepper Motor Controller doesn't seem to move correct amount after setting jog size (We set jog step size to 0.5, the jog step size with be registered to 0.102). Possible issue with Unit Converter and not recognizing that stage the motor is connected to (though we set the motor name in our initialization). Also not connected to stage yet, so this may just be an issue with using an isolated controller.
 * Stepper Motor seems to be moving backwards when jogging forward and vice versa. May be due to not being homed.
 ## Both issues above seem to only be happening with the Dell computer. Using the exact same commit on the virtual machine results in no problem
-* Stepper motor has trouble reading position in gui (whenever we call the getter function to get motor position, it happens instantly as it jogs, which then reads out the poition before finishing the jog step). Could solve by doing time.sleep, but this would slow down the gui and exacerbate the issue
+* Haven't implemented anything to ensure that the frog wont use the same intensity reading for two steps if the integration time is much larger than the time it takes for the motor to move. Doesn't seem to be an issue for integration times below 500 ms.
+* Still need to implement the threshold data
