@@ -98,6 +98,7 @@ class Controller:
     def move_to_saved_motor_position(self):
         with open('saved_motor_position.p', 'rb') as f:
             self.move_absolute(pickle.load(f))
+            self.wait()
     def get_saved_position(self):
         with open('saved_motor_position.p', 'rb') as f:
             return str(pickle.load(f))
@@ -113,7 +114,7 @@ def main():
     #myController.jog_backward()
     #myController.move_absolute(3)
     print(myController.get_position())
-    myController.move_absolute(2)
+    myController.move_absolute(4)
     #myController.save_this_motor_position()
     myController.move_absolute(0)
     myController.move_to_saved_motor_position()

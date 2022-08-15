@@ -19,14 +19,14 @@ import time
 SPEED_OF_LIGHT = 3e8
 FEMTO_TO_SEC = 1e-15
 METERS_TO_MILLI = 1e3
-FEMTO_TO_MILLI = SPEED_OF_LIGHT * FEMTO_TO_SEC * METERS_TO_MILLI
+FEMTO_TO_MILLI = SPEED_OF_LIGHT * FEMTO_TO_SEC * METERS_TO_MILLI / 2  
 
 #class Controller_Connect()
 class Window(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("FROG")
-        self.geometry('1400x600')
+        self.geometry('1600x800')
         #self.rowconfigure(6)
         #self.columnconfigure(6)
 
@@ -92,7 +92,7 @@ class Window(tk.Tk):
   
         self.spectral_frame = tk.Frame(self, **padding)
         self.spectral_frame.grid(column=2, columnspan=1, row=0, rowspan=1)
-        self.spectral_figure = plt.figure(figsize=(3,3))
+        self.spectral_figure = plt.figure(figsize=(5,5))
 
         self.I_vs_wavelength = self.spectral_figure.add_subplot()
         self.I_vs_wavelength.set_xlabel('Wavelength (nm)')
@@ -134,7 +134,7 @@ class Window(tk.Tk):
         #Graphing the delay
         self.delay_frame = tk.Frame(self, **padding)
         self.delay_frame.grid(column=3, columnspan=1, row=0, rowspan=1)
-        self.delay_figure = plt.figure(figsize=(3,3))
+        self.delay_figure = plt.figure(figsize=(5,5))
 
         self.wavelength_v_delay = self.delay_figure.add_subplot()
         self.wavelength_v_delay.set_ylabel('Wavelength (nm)')
