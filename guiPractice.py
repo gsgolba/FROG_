@@ -31,7 +31,7 @@ class Window(tk.Tk):
         #self.columnconfigure(6)
 
         #Automatic Connections
-        self.spec = spectrometer.Spectrometer() #change whether real or virtual
+        self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
         self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
         self.motor.connect()
 
@@ -68,6 +68,9 @@ class Window(tk.Tk):
         self.motor_position_label_var = tk.StringVar()
         self.motor_position_label_var.set('Position')
 
+        self.saved_motor_position_label_var = tk.StringVar()
+        self.saved_motor_position_label_var.set('Current Saved Position')
+
         
         self.delay = 1 #in ms
         
@@ -89,7 +92,7 @@ class Window(tk.Tk):
   
         self.spectral_frame = tk.Frame(self, **padding)
         self.spectral_frame.grid(column=2, columnspan=1, row=0, rowspan=1)
-        self.spectral_figure = plt.figure(figsize=(5,5))
+        self.spectral_figure = plt.figure(figsize=(3,3))
 
         self.I_vs_wavelength = self.spectral_figure.add_subplot()
         self.I_vs_wavelength.set_xlabel('Wavelength (nm)')
@@ -131,7 +134,7 @@ class Window(tk.Tk):
         #Graphing the delay
         self.delay_frame = tk.Frame(self, **padding)
         self.delay_frame.grid(column=3, columnspan=1, row=0, rowspan=1)
-        self.delay_figure = plt.figure(figsize=(5,5))
+        self.delay_figure = plt.figure(figsize=(3,3))
 
         self.wavelength_v_delay = self.delay_figure.add_subplot()
         self.wavelength_v_delay.set_ylabel('Wavelength (nm)')
@@ -170,26 +173,32 @@ class Window(tk.Tk):
         self.thershold_data_entry=tk.Entry(self.motor_frame, textvariable=self.threshold_data_var)
         self.thershold_data_entry.grid(column=1, row=1)
 
-        self.motor_button = tk.Button(self.motor_frame, text='Connect Motor')#, command=self.connect_motor)
-        self.motor_button.grid(column=0, row=2)
-
         self.motor_position_label = tk.Label(self.motor_frame, bg='gray', textvariable=self.motor_position_label_var)
-        self.motor_position_label.grid(column=0, row=3)
+        self.motor_position_label.grid(column=1, row=2)
+        self.get_position_button = tk.Button(self.motor_frame, text='Display Position (mm)', command=self.get_motor_position)
+        self.get_position_button.grid(column=0, row=2)
         
         self.motor_homing_button = tk.Button(self.motor_frame, text='Home', command=self.home)
-        self.motor_homing_button.grid(column=0, row=4)
+        self.motor_homing_button.grid(column=2, row=3)
 
         self.motor_jogforward_button = tk.Button(self.motor_frame, text='Jog Forward', command=self.jog_forward)
-        self.motor_jogforward_button.grid(column=0,row=6)
+        self.motor_jogforward_button.grid(column=0,row=3)
 
         self.motor_jogbackward_button = tk.Button(self.motor_frame, text='Jog Backward', command=self.jog_backward)
-        self.motor_jogbackward_button.grid(column=1,row=6)
+        self.motor_jogbackward_button.grid(column=1,row=3)
 
         self.motor_position_entry_label = tk.Label(self.motor_frame, text='Move to Position (fs)')
-        self.motor_position_entry_label.grid(column=0, row=7)
+        self.motor_position_entry_label.grid(column=0, row=4)
         self.motor_position_entry = tk.Entry(self.motor_frame, textvariable=self.motor_position_entry_var)
         self.motor_position_entry.bind('<Return>', self.move_motor_position)
-        self.motor_position_entry.grid(column=1, row=7)
+        self.motor_position_entry.grid(column=1, row=4)
+
+        self.save_motor_position_button = tk.Button(self.motor_frame, text='Save Motor Position', command=self.save_motor_position)
+        self.save_motor_position_button.grid(column=0,row=5)
+        self.move_to_save_position_button = tk.Button(self.motor_frame, text='Move to Saved Position', command=self.move_to_save_position)
+        self.move_to_save_position_button.grid(column=1,row=5)
+        self.current_saved_position_label = tk.Label(self.motor_frame, bg ='gray', textvariable=self.saved_motor_position_label_var)
+        self.current_saved_position_label.grid(column=2, row=5)
         
         #Program close
         self.delay_scan_button = tk.Button(self, text='FROG', command=self.delay_reading)
@@ -239,7 +248,7 @@ class Window(tk.Tk):
             self.motor.jog_forward()
             #if self.motor.is_controller_busy():
             #    self.motor.wait()
-            self.get_motor_position()
+            #self.get_motor_position()
         except:
             print("could not jog forward")
     def jog_backward(self):
@@ -247,17 +256,26 @@ class Window(tk.Tk):
             self.motor.jog_backward()
             #if self.motor.is_controller_busy():
             #    self.motor.wait()
-            self.get_motor_position()
+            #self.get_motor_position()
         except:
             print("could not jog backward")
     def wait_for_motor(self):
+        #time.sleep(0.05) 
+        #sometimes program does not recognize
+        # motor began to move. Sleep to let it catch up
         if self.motor.is_controller_busy():
             print('gots to wait')
             time.sleep(0.5)
             self.wait_for_motor()
         print('done wait')
         return
+    def save_motor_position(self):
+        self.motor.save_this_motor_position()
+        self.saved_motor_position_label_var.set(self.motor.get_position())
 
+    def move_to_save_position(self):
+        self.motor.move_to_saved_motor_position()
+        self.wait_for_motor()
 
 
     #Spectrometer Functions
@@ -333,16 +351,14 @@ class Window(tk.Tk):
                 self.scan_width_in_space = float(self.scan_width_var.get()) * FEMTO_TO_MILLI
                 self.number_of_steps = int(self.scan_width_in_space / self.step_size_in_space)
                 self.delay_matrix = np.zeros((len(self.spec.get_wavelengths()), 2 * self.number_of_steps))
-                ### at this point we should move the motor to its home position
-                #for now lets just hard code in a home position
-                self.motor.move_absolute(5)
+                ### at this point we should move the motor to its desired position
+                self.move_to_save_position()
                 self.wait_for_motor()
                 print('motor homed')
                 # then we would start the scan on one side of the scan width. 
                 # IE move motor to furthest back position
-                self.motor.move_absolute(5 - self.scan_width_in_space)
+                self.motor.move_relative(-self.scan_width_in_space)
                 self.wait_for_motor()
-                #self.im = self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
 
 
             while self.counter < 2 * self.number_of_steps: 
