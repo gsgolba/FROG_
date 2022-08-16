@@ -31,7 +31,7 @@ class Window(tk.Tk):
         #self.columnconfigure(6)
 
         #Automatic Connections
-        self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
+        self.spec = spectrometer.Spectrometer() #change whether real or virtual
         self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
         self.motor.connect()
 
@@ -53,6 +53,8 @@ class Window(tk.Tk):
 
         self.min_wave_var = tk.StringVar()
         self.max_wave_var = tk.StringVar()
+        self.max_intens_var = tk.StringVar()
+        self.min_intens_var = tk.StringVar()
 
         self.step_size_var = tk.StringVar()
         self.step_size_var.set('50')
@@ -120,16 +122,28 @@ class Window(tk.Tk):
         self.max_wave_label = tk.Label(self.control_frame, text='Wavelength max (nm)')
         self.max_wave_label.grid(column=0,row=2)
 
+        self.min_intens_entry = tk.Entry(self.control_frame, textvariable=self.min_intens_var)
+        self.min_intens_entry.bind('<Return>', self.set_min_intens)
+        self.min_intens_entry.grid(column=1,row=3)
+        self.min_intens_label = tk.Label(self.control_frame, text='Intensity min (a.u.)')
+        self.min_intens_label.grid(column=0,row=3)
+    
+        self.max_intens_entry = tk.Entry(self.control_frame, textvariable=self.max_intens_var)
+        self.max_intens_entry.bind('<Return>', self.set_max_intens)
+        self.max_intens_entry.grid(column=1,row=4)
+        self.max_intens_label = tk.Label(self.control_frame, text='Intensity max (a.u.)')
+        self.max_intens_label.grid(column=0,row=4)
+
         self.integration_entry = tk.Entry(self.control_frame, textvariable=self.integration_var)
         self.integration_entry.bind('<Return>', self.set_integration_length)
-        self.integration_entry.grid(column=1,row=3)
+        self.integration_entry.grid(column=1,row=5)
         self.integration_label = tk.Label(self.control_frame, text='Integration time (ms)')
-        self.integration_label.grid(column=0,row=3)
+        self.integration_label.grid(column=0,row=5)
 
         self.spec_run_button = tk.Button(self.control_frame, text='Run Spec', command=self.spectral_reading)
-        self.spec_run_button.grid(column=0,row=4)
+        self.spec_run_button.grid(column=0,row=6)
         self.spec_stop_run_button = tk.Button(self.control_frame, text='Stop Run', command=self.stop_spectral_reading)
-        self.spec_stop_run_button.grid(column=1,row=4)
+        self.spec_stop_run_button.grid(column=1,row=6)
 
         #Graphing the delay
         self.delay_frame = tk.Frame(self, **padding)
@@ -146,14 +160,14 @@ class Window(tk.Tk):
         self.delay_canvas.get_tk_widget().pack(expand=True)
 
         self.step_entry = tk.Entry(self.control_frame,textvariable=self.step_size_var)
-        self.step_entry.grid(column=1, row=5)
+        self.step_entry.grid(column=1, row=7)
         self.step_label = tk.Label(self.control_frame, text='Step size (fs)')
-        self.step_label.grid(column=0, row=5)
+        self.step_label.grid(column=0, row=7)
 
         self.scan_width_entry = tk.Entry(self.control_frame, textvariable=self.scan_width_var)
-        self.scan_width_entry.grid(column=1, row=6)
+        self.scan_width_entry.grid(column=1, row=8)
         self.scan_width_label = tk.Label(self.control_frame, text='Delay scan width (fs)')
-        self.scan_width_label.grid(column=0, row=6)
+        self.scan_width_label.grid(column=0, row=8)
 
         self.delay_toolbar = NavigationToolbar2Tk(self.delay_canvas, self.delay_frame)
         self.delay_toolbar.update()
@@ -302,13 +316,18 @@ class Window(tk.Tk):
 
             #if we had bounds, enforce them again
             left,right = self.I_vs_wavelength.get_xlim()
-            left = int(left)
-            right = int(right)
+            down, up = self.I_vs_wavelength.get_ylim()
+
             if self.min_wave_var.get() != '':
                 left = int(self.min_wave_var.get())
                 self.I_vs_wavelength.set_xlim([left, right])
             if self.max_wave_var.get() != '':
-                self.I_vs_wavelength.set_xlim([left,int(self.max_wave_var.get())])        
+                self.I_vs_wavelength.set_xlim([left,int(self.max_wave_var.get())])
+            if self.min_intens_var.get() != '':
+                down = int(self.min_intens_var.get())
+                self.I_vs_wavelength.set_ylim([down, up])
+            if self.max_intens_var.get() != '':
+                self.I_vs_wavelength.set_ylim([down, int(self.max_intens_var.get())])        
             self.spectral_canvas.draw()
         else:
             msgbox.showerror('Uh Oh', 'No spectrometer connected')
@@ -322,6 +341,12 @@ class Window(tk.Tk):
         max_ = int(self.max_wave_var.get())
         self.I_vs_wavelength.set_xlim([left,max_])
         self.spectral_canvas.draw()
+    def set_max_intens(self,event):
+        down,up = self.I_vs_wavelength.get_ylim()
+        self.I_vs_wavelength.set_ylim([down,int(self.max_intens_var.get())])
+    def set_min_intens(self,event):
+        down,up = self.I_vs_wavelength.get_ylim()
+        self.I_vs_wavelength.set_ylim([int(self.min_intens_var.get()), up])
     def set_integration_length(self, event):
         if self.spec != None:
             time=self.integration_entry.get()
