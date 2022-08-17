@@ -438,18 +438,20 @@ class Window(tk.Tk):
         if not self.has_a_frog_measurement or not self.has_background_subtraction:
             msgbox.showerror(message='cannot adjust as either there is no FROG data or no dark frame')
         else:
-            #print(self.delay_matrix)
+            print(self.delay_matrix)
             transposed_dark_frame = self.dark_frame[:, np.newaxis]
             #print(transposed_dark_frame)
             self.delay_matrix = self.delay_matrix - transposed_dark_frame
             #print(self.delay_matrix)
             self.delay_matrix = np.where(self.delay_matrix < 0, 0, self.delay_matrix)
-            #print(self.delay_matrix)
+            print(self.delay_matrix)
             self.wavelength_v_delay.imshow(self.delay_matrix, aspect ='auto', extent=[-int(self.scan_width_var.get()), int(self.scan_width_var.get()), self.wavelength[-1], self.wavelength[0]])
             self.wavelength_v_delay.set_ylabel('Wavelength (nm)')
             self.wavelength_v_delay.set_xlabel('Delay (fs)')
             self.delay_canvas.draw()
     def adjust_with_threshold_data(self):
+        #make sure to save a new matrix, in case want to threshold the old matrix again
+
         print('nice')
     def save_FROG_data(self):
         if not self.has_a_frog_measurement:
@@ -470,11 +472,9 @@ class Window(tk.Tk):
             #wavelength center pixel
             center_wave = self.wavelength[int(len(self.wavelength) / 2)]
             f.write(str(center_wave) + '\n')
+            f.write(str(self.delay_matrix.T))
             f.close()
             #FROG data
-            np.savetxt('FROG_Data.txt', self.delay_matrix.T)
-
-
 
     def kill_it(self):
         self.destroy()
