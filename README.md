@@ -22,3 +22,4 @@ Creating an API for spectrometer and motor controller
 ## Both issues above seem to only be happening with the Dell computer. Using the exact same commit on the virtual machine results in no problem
 * Haven't implemented anything to ensure that the frog wont use the same intensity reading for two steps if the integration time is much larger than the time it takes for the motor to move.
 * Still need to implement the threshold data
+* I should definitely change the refresh rate of the gui to just the same as the integration time of the spectrometer.
