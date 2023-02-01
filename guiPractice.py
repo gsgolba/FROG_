@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk)
 import spectrometer
-import ThorLabsMotor
+#import ThorLabsMotor
 import timeit
 from PIL import ImageTk, Image
 import time
@@ -31,9 +31,9 @@ class Window(tk.Tk):
         #self.columnconfigure(6)
 
         #Automatic Connections
-        self.spec = spectrometer.Spectrometer() #change whether real or virtual
-        self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
-        self.motor.connect()
+        self.spec = spectrometer.Virtual_Spectrometer() #change whether real or virtual
+        #self.motor = ThorLabsMotor.Controller('26001568', 'ZST225')
+        #self.motor.connect()
 
         self.spectral_cancel_id = None
         self.motor_cancel_id = None
