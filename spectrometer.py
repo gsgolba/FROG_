@@ -11,6 +11,8 @@ def main():
     spec = S.Spectrometer.from_first_available()
     min_, max_ = spec.integration_time_micros_limits
     print(min_, max_)
+    print(len(spec.intensities()))
+    print(len(spec.wavelengths()))
     spec.close()
 
 #if we have time, create a super class

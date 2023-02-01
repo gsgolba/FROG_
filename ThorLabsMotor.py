@@ -1,5 +1,6 @@
 import time
 import clr
+import pickle
 clr.AddReference("C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.DeviceManagerCLI.dll")
 clr.AddReference("C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.GenericMotorCLI.dll")
 clr.AddReference("C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.KCube.StepperMotorCLI.dll")
@@ -83,6 +84,25 @@ class Controller:
         return
     def is_controller_busy(self):
         return self.controller.IsDeviceBusy
+    def save_this_motor_position(self):
+        '''
+        Couldn't think of a simpler solution:
+        we use pickle to store the current motor position in a file
+        we can then grab this value by opening the file
+        we edit this file each time to save a new position
+        if we want to save multiple positions,
+            just add more files, or have it be a list in a single file
+        '''
+        with open('saved_motor_position.p', 'wb') as f:
+            pickle.dump(self.get_position(),f)
+    def move_to_saved_motor_position(self):
+        with open('saved_motor_position.p', 'rb') as f:
+            self.move_absolute(pickle.load(f))
+            self.wait()
+    def get_saved_position(self):
+        with open('saved_motor_position.p', 'rb') as f:
+            return str(pickle.load(f))
+        
 def main():
     #Below is just code to test whether we can move the motor accordingly
     myController = Controller(str('26001568'), str('ZST225'))
@@ -94,7 +114,10 @@ def main():
     #myController.jog_backward()
     #myController.move_absolute(3)
     print(myController.get_position())
-    myController.move_absolute(3)
+    myController.move_absolute(4)
+    #myController.save_this_motor_position()
+    myController.move_absolute(0)
+    myController.move_to_saved_motor_position()
     myController.move_absolute(0)
     myController.disconnect()
 
